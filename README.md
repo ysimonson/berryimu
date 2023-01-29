@@ -1,3 +1,17 @@
+# BerryIMU
+
+[![crates.io](https://img.shields.io/crates/v/berryimu.svg)](https://crates.io/crates/berryimu)
+[![Released API docs](https://docs.rs/berryimu/badge.svg)](https://docs.rs/berryimu)
+
+A pure-rust library for interfacing with [BerryIMU v3](https://ozzmaker.com/product/berryimu-accelerometer-gyroscope-magnetometer-barometricaltitude-sensor/).
+
+At the moment, this is just enough functionality to support [what's demoed in part 2 of the raspberry pi guide](https://ozzmaker.com/compass2/), as this is all I needed for building a robot. Specifically, this supports reading the accelerometer and magnetometer with fixed settings on linux. Pull requests to add more functionality are welcome.
+
+## Example
+
+This will print out the tilt-compensated heading on linux:
+
+```rust
 use std::error::Error;
 use std::f64;
 use std::thread;
@@ -44,3 +58,5 @@ pub fn main() -> Result<(), Box<dyn Error>> {
         thread::sleep(Duration::from_millis(25));
     }
 }
+
+```

@@ -23,6 +23,7 @@ const LIS3MDL_CTRL_REG2: u8 = 0x21;
 const LIS3MDL_CTRL_REG3: u8 = 0x22;
 const LIS3MDL_OUT_X_L: u8 = 0x28;
 
+/// An error that occurred while interfacing with the BerryIMUv3 device.
 #[derive(Debug)]
 pub enum Error<E: StdError + 'static> {
     Init,
@@ -62,8 +63,8 @@ fn init<D: I2CDevice>(
     who_am_i: u8,
     expected_response: u8,
 ) -> Result<(), Error<D::Error>> {
-    let lsm6dsl_who_m_response = dev.smbus_read_byte_data(who_am_i)?;
-    if lsm6dsl_who_m_response == expected_response {
+    let who_am_i_response = dev.smbus_read_byte_data(who_am_i)?;
+    if who_am_i_response == expected_response {
         Ok(())
     } else {
         Err(Error::Init)
@@ -82,10 +83,15 @@ fn read_block<D: I2CDevice>(
     Ok(block)
 }
 
+/// An accelerometer reader.
 pub struct Accelerometer<D: I2CDevice>(D);
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
 impl Accelerometer<LinuxI2CDevice> {
+    /// Creates a new accelerometer reader on linux.
+    ///
+    /// # Arguments
+    /// * `addr`: The I2C device address, e.g. `/dev/i2c-1`.
     pub fn new_on_linux<P: AsRef<Path>>(addr: P) -> Result<Self, Error<LinuxI2CError>> {
         let dev = LinuxI2CDevice::new(addr, LSM6DSL_ADDRESS)?;
         Accelerometer::new(dev)
@@ -93,15 +99,19 @@ impl Accelerometer<LinuxI2CDevice> {
 }
 
 impl<D: I2CDevice> Accelerometer<D> {
+    /// Creates a new accelerometer reader from an I2C device.
+    ///
+    /// # Arguments
+    /// * `dev`: The I2C device.
     pub fn new(mut dev: D) -> Result<Self, Error<D::Error>> {
         init(&mut dev, LSM6DSL_WHO_AM_I, 0x6A)?;
-        // Enable the accelerometer
         dev.smbus_write_byte_data(LSM6DSL_CTRL1_XL, 0b10011111)?; // ODR 3.33 kHz, +/- 8g , BW = 400hz
         dev.smbus_write_byte_data(LSM6DSL_CTRL8_XL, 0b11001000)?; // Low pass filter enabled, BW9, composite filter
         dev.smbus_write_byte_data(LSM6DSL_CTRL3_C, 0b01000100)?; // Enable Block Data update, increment during multi byte read
         Ok(Self(dev))
     }
 
+    /// Read the raw accelerometer values.
     pub fn read(&mut self) -> Result<(i32, i32, i32), Error<D::Error>> {
         let block = read_block(&mut self.0, LSM6DSL_OUTX_L_XL, 6)?;
         // Combine readings for each axis
@@ -112,10 +122,15 @@ impl<D: I2CDevice> Accelerometer<D> {
     }
 }
 
+/// A magnetometer reader.
 pub struct Magnetometer<D: I2CDevice>(D);
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
 impl Magnetometer<LinuxI2CDevice> {
+    /// Creates a new magnetometer reader on linux.
+    ///
+    /// # Arguments
+    /// * `addr`: The I2C device address, e.g. `/dev/i2c-1`.
     pub fn new_on_linux<P: AsRef<Path>>(addr: P) -> Result<Self, Error<LinuxI2CError>> {
         let dev = LinuxI2CDevice::new(addr, LIS3MDL_ADDRESS)?;
         Magnetometer::new(dev)
@@ -123,6 +138,10 @@ impl Magnetometer<LinuxI2CDevice> {
 }
 
 impl<D: I2CDevice> Magnetometer<D> {
+    /// Creates a new magnetometer reader from an I2C device.
+    ///
+    /// # Arguments
+    /// * `dev`: The I2C device.
     pub fn new(mut dev: D) -> Result<Self, Error<D::Error>> {
         init(&mut dev, LIS3MDL_WHO_AM_I, 0x3D)?;
         // Enable the magnetometer
@@ -132,6 +151,7 @@ impl<D: I2CDevice> Magnetometer<D> {
         Ok(Self(dev))
     }
 
+    /// Read the raw magnetometer values.
     pub fn read(&mut self) -> Result<(i32, i32, i32), Error<D::Error>> {
         let block = read_block(&mut self.0, LIS3MDL_OUT_X_L, 6)?;
         // Combine readings for each axis
