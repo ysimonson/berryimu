@@ -3,7 +3,12 @@ name = "berryimu"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+authors = ["Yusuf Simonson <simonson@gmail.com>"]
+description = "A pure-rust library for interfacing with BerryIMUv3"
+repository = "https://github.com/ysimonson/berryimu"
+categories = ["Hardware support", "Embedded development"]
+license = "Apache-2.0"
+readme = "README.md"
 
 [dependencies]
 i2cdev = "0.5.1"
