@@ -4,6 +4,8 @@ use std::fmt;
 use i2cdev::core::*;
 #[cfg(any(target_os = "linux", target_os = "android"))]
 use i2cdev::linux::{LinuxI2CDevice, LinuxI2CError};
+#[cfg(any(target_os = "linux", target_os = "android"))]
+use std::path::Path;
 
 // LSM6DSL
 pub const LSM6DSL_ADDRESS: u16 = 0x6A;
@@ -84,8 +86,8 @@ pub struct Accelerometer<D: I2CDevice>(D);
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
 impl Accelerometer<LinuxI2CDevice> {
-    pub fn new_on_linux<P: AsRef<Path>>(addr: P) -> Result<Self, Error<D::Error>> {
-        let mut dev = LinuxI2CDevice::new(addr, LSM6DSL_ADDRESS)?;
+    pub fn new_on_linux<P: AsRef<Path>>(addr: P) -> Result<Self, Error<LinuxI2CError>> {
+        let dev = LinuxI2CDevice::new(addr, LSM6DSL_ADDRESS)?;
         Accelerometer::new(dev)
     }
 }
@@ -114,8 +116,8 @@ pub struct Magnetometer<D: I2CDevice>(D);
 
 #[cfg(any(target_os = "linux", target_os = "android"))]
 impl Magnetometer<LinuxI2CDevice> {
-    pub fn new_on_linux<P: AsRef<Path>>(addr: P) -> Result<Self, Error<D::Error>> {
-        let mut dev = LinuxI2CDevice::new(addr, LIS3MDL_ADDRESS)?;
+    pub fn new_on_linux<P: AsRef<Path>>(addr: P) -> Result<Self, Error<LinuxI2CError>> {
+        let dev = LinuxI2CDevice::new(addr, LIS3MDL_ADDRESS)?;
         Magnetometer::new(dev)
     }
 }
