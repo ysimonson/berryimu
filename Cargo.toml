@@ -10,5 +10,13 @@ categories = ["Hardware support", "Embedded development"]
 license = "Apache-2.0"
 readme = "README.md"
 
+[features]
+default = ["i2c", "spi"]
+i2c = ["i2cdev"]
+spi = ["spidev"]
+
 [dependencies]
-i2cdev = "0.5.1"
+# i2c dependencies
+i2cdev = { version = "0.5.1", optional = true }
+# spi dependencies
+spidev = { version = "0.5.1", optional = true }
