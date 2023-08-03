@@ -6,8 +6,8 @@ use std::time::Duration;
 use berryimu;
 
 pub fn main() -> Result<(), Box<dyn Error>> {
-    let mut accelerometer = berryimu::Accelerometer::new_on_linux("/dev/i2c-1")?;
-    let mut magnetometer = berryimu::Magnetometer::new_on_linux("/dev/i2c-1")?;
+    let mut accelerometer = berryimu::i2c::Accelerometer::new_from_address("/dev/i2c-1")?;
+    let mut magnetometer = berryimu::i2c::Magnetometer::new_from_address("/dev/i2c-1")?;
 
     loop {
         let (acc_x, acc_y, acc_z) = accelerometer.read()?;
@@ -38,7 +38,7 @@ pub fn main() -> Result<(), Box<dyn Error>> {
             heading += 360.0;
         }
 
-        println!("{heading:.2f}");
+        println!("{heading:.2}");
 
         // Sleep for 25ms
         thread::sleep(Duration::from_millis(25));
