@@ -123,7 +123,7 @@ impl Gyroscope {
     /// # Arguments
     /// * `dev`: The SPI device.
     pub fn new(mut dev: Spidev) -> Result<Self, crate::Error<io::Error>> {
-        init(&mut dev, crate::LIS3MDL_WHO_AM_I, 0x3D)?;
+        init(&mut dev, crate::LIS3MDL_WHO_AM_I, 0x6A)?;
         // Enable the gyroscope
         write_reg(&mut dev, crate::LSM6DSL_CTRL2_G, 0b10011100)?; // ODR 3.3 kHz, 2000 dps
         Ok(Self(dev))
