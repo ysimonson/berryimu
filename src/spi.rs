@@ -106,36 +106,46 @@ impl Accelerometer {
     }
 }
 
-/// A magnetometer reader.
-pub struct Magnetometer(Spidev);
+/// A gyroscope reader.
+pub struct Gyroscope(Spidev);
 
-impl Magnetometer {
-    /// Creates a new magnetometer reader from an address.
+impl Gyroscope {
+    /// Creates a new gyroscope reader from an address.
     ///
     /// # Arguments
     /// * `addr`: The SPI device address, e.g. `/dev/spidev0.0`.
     pub fn new_from_address<P: AsRef<Path>>(addr: P) -> Result<Self, crate::Error<io::Error>> {
-        Magnetometer::new(device_from_address(addr)?)
+        Gyroscope::new(device_from_address(addr)?)
     }
 
-    /// Creates a new magnetometer reader from a SPI device.
+    /// Creates a new gyroscope reader from a SPI device.
     ///
     /// # Arguments
     /// * `dev`: The SPI device.
     pub fn new(mut dev: Spidev) -> Result<Self, crate::Error<io::Error>> {
         init(&mut dev, crate::LIS3MDL_WHO_AM_I, 0x3D)?;
-        // Enable the magnetometer
-        write_reg(&mut dev, crate::LIS3MDL_CTRL_REG1, 0b11011100)?; // Temp sensor enabled, High performance, ODR 80 Hz, FAST ODR disabled and Selft test disabled.
-        write_reg(&mut dev, crate::LIS3MDL_CTRL_REG2, 0b00100000)?; // +/- 8 gauss
-        write_reg(&mut dev, crate::LIS3MDL_CTRL_REG3, 0b00000000)?; // Continuous-conversion mode
+        // Enable the gyroscope
+        write_reg(&mut dev, crate::LSM6DSL_CTRL2_G, 0b10011100)?; // ODR 3.3 kHz, 2000 dps
         Ok(Self(dev))
     }
 
-    /// Read the raw magnetometer values.
+    /// Read the raw gyroscope values.
     pub fn read(&mut self) -> Result<(i32, i32, i32), crate::Error<io::Error>> {
-        let x = read_axis(&mut self.0, crate::LIS3MDL_OUT_X_L, crate::LIS3MDL_OUT_X_H)?;
-        let y = read_axis(&mut self.0, crate::LIS3MDL_OUT_Y_L, crate::LIS3MDL_OUT_Y_H)?;
-        let z = read_axis(&mut self.0, crate::LIS3MDL_OUT_Z_L, crate::LIS3MDL_OUT_Z_H)?;
+        let x = read_axis(
+            &mut self.0,
+            crate::LSM6DSL_OUTX_L_G,
+            crate::LSM6DSL_OUTX_H_G,
+        )?;
+        let y = read_axis(
+            &mut self.0,
+            crate::LSM6DSL_OUTY_L_G,
+            crate::LSM6DSL_OUTY_H_G,
+        )?;
+        let z = read_axis(
+            &mut self.0,
+            crate::LSM6DSL_OUTZ_L_G,
+            crate::LSM6DSL_OUTZ_H_G,
+        )?;
         Ok((x, y, z))
     }
 }
